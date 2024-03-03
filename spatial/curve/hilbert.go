@@ -42,9 +42,8 @@ func (h Hilbert2D) Pos(v []int) int {
 	return d
 }
 
-// Coord2D returns the spatial coordinates of pos.
-func (h Hilbert2D) Coord2D(pos int) [2]int {
-	var v [2]int
+// WriteCoordTo writes the spatial coordinates of pos to v.
+func (h Hilbert2D) WriteCoordTo(pos int, v []int) {
 	for n := 0; n < h.Order; n++ {
 		e := pos & 3
 		h.rot(n, v[:], e)
@@ -55,13 +54,13 @@ func (h Hilbert2D) Coord2D(pos int) [2]int {
 		v[1] += ry << n
 		pos >>= 2
 	}
-	return v
 }
 
 // Coord returns the spatial coordinates of pos as a slice.
 func (h Hilbert2D) Coord(pos int) []int {
-	v := h.Coord2D(pos)
-	return v[:]
+	v := make([]int, 2)
+	h.WriteCoordTo(pos, v)
+	return v
 }
 
 // Hilbert3D is a 3-dimensional Hilbert curve.
@@ -109,9 +108,8 @@ func (h Hilbert3D) Pos(v []int) int {
 	return d
 }
 
-// Coord3D returns the spatial coordinates of pos.
-func (h Hilbert3D) Coord3D(pos int) [3]int {
-	var v [3]int
+// WriteCoordTo writes the spatial coordinates of pos to v.
+func (h Hilbert3D) WriteCoordTo(pos int, v []int) {
 	for n := 0; n < h.Order; n++ {
 		e := pos & 7
 		h.rot(true, n, v[:], e)
@@ -124,12 +122,12 @@ func (h Hilbert3D) Coord3D(pos int) [3]int {
 		v[2] += rz << n
 		pos >>= 3
 	}
-	return v
 }
 
 // Coord returns the spatial coordinates of pos as a slice.
 func (h Hilbert3D) Coord(pos int) []int {
-	v := h.Coord3D(pos)
+	v := make([]int, 3)
+	h.WriteCoordTo(pos, v)
 	return v[:]
 }
 
@@ -189,10 +187,9 @@ func (h Hilbert4D) Pos(v []int) int {
 	return d
 }
 
-// Coord4D returns the spatial coordinates of pos.
-func (h Hilbert4D) Coord4D(pos int) [4]int {
+// WriteCoordTo writes the spatial coordinates of pos to v.
+func (h Hilbert4D) WriteCoordTo(pos int, v []int) {
 	N := 4
-	var v [4]int
 	for n := 0; n < h.Order; n++ {
 		e := pos & (1<<N - 1)
 		h.rot(true, n, v[:], e)
@@ -203,13 +200,13 @@ func (h Hilbert4D) Coord4D(pos int) [4]int {
 		}
 		pos >>= N
 	}
-	return v
 }
 
 // Coord returns the spatial coordinates of pos as a slice.
 func (h Hilbert4D) Coord(pos int) []int {
-	v := h.Coord4D(pos)
-	return v[:]
+	v := make([]int, 4)
+	h.WriteCoordTo(pos, v)
+	return v
 }
 
 type op interface{ do(int, []int) }

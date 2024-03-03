@@ -234,8 +234,9 @@ func BenchmarkHilbert(b *testing.B) {
 				b.Run(fmt.Sprintf("Order %d", ord), func(b *testing.B) {
 					h := newCurve(ord, N)
 					d := rand.Intn(1 << (ord * N))
+					v := make([]int, N)
 					for n := 0; n < b.N; n++ {
-						h.Coord(d)
+						h.WriteCoordTo(d, v)
 					}
 				})
 			}
@@ -248,6 +249,7 @@ type curve interface {
 	Len() int
 	Pos(v []int) int
 	Coord(pos int) []int
+	WriteCoordTo(pos int, v []int)
 }
 
 func newCurve(order, dim int) curve {
