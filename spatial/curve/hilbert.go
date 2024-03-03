@@ -80,15 +80,15 @@ func (h Hilbert3D) Len() int { return 1 << (3 * h.Order) }
 func (h Hilbert3D) rot(reverse bool, n int, v []int, d int) {
 	switch d {
 	case 0:
-		ops{swap{1, 2}, swap{0, 2}}.do(reverse, n, v)
+		do2(reverse, n, v, swap{1, 2}, swap{0, 2})
 	case 1, 2:
-		ops{swap{0, 2}, swap{1, 2}}.do(reverse, n, v)
+		do2(reverse, n, v, swap{0, 2}, swap{1, 2})
 	case 3, 4:
 		invert{0, 1}.do(n, v)
 	case 5, 6:
-		ops{flip{0, 2}, flip{1, 2}}.do(reverse, n, v)
+		do2(reverse, n, v, flip{0, 2}, flip{1, 2})
 	case 7:
-		ops{flip{1, 2}, flip{0, 2}}.do(reverse, n, v)
+		do2(reverse, n, v, flip{1, 2}, flip{0, 2})
 	}
 }
 
@@ -149,23 +149,23 @@ func (h Hilbert4D) Len() int { return 1 << (4 * h.Order) }
 func (h Hilbert4D) rot(reverse bool, n int, v []int, d int) {
 	switch d {
 	case 0:
-		ops{swap{1, 3}, swap{0, 3}}.do(reverse, n, v)
+		do2(reverse, n, v, swap{1, 3}, swap{0, 3})
 	case 1, 2:
-		ops{swap{0, 3}, swap{1, 3}}.do(reverse, n, v)
+		do2(reverse, n, v, swap{0, 3}, swap{1, 3})
 	case 3, 4:
-		ops{flip{0, 1}, swap{2, 3}}.do(reverse, n, v)
+		do2(reverse, n, v, flip{0, 1}, swap{2, 3})
 	case 5, 6:
-		ops{flip{1, 2}, swap{2, 3}}.do(reverse, n, v)
+		do2(reverse, n, v, flip{1, 2}, swap{2, 3})
 	case 7, 8:
 		invert{0, 2}.do(n, v)
 	case 9, 10:
-		ops{flip{1, 2}, flip{2, 3}}.do(reverse, n, v)
+		do2(reverse, n, v, flip{1, 2}, flip{2, 3})
 	case 11, 12:
-		ops{flip{0, 1}, flip{2, 3}}.do(reverse, n, v)
+		do2(reverse, n, v, flip{0, 1}, flip{2, 3})
 	case 13, 14:
-		ops{flip{0, 3}, flip{1, 3}}.do(reverse, n, v)
+		do2(reverse, n, v, flip{0, 3}, flip{1, 3})
 	case 15:
-		ops{flip{1, 3}, flip{0, 3}}.do(reverse, n, v)
+		do2(reverse, n, v, flip{1, 3}, flip{0, 3})
 	}
 }
 
@@ -229,17 +229,16 @@ type flip struct{ i, j int }
 
 func (c flip) do(n int, v []int) { v[c.i], v[c.j] = v[c.j]^(1<<n-1), v[c.i]^(1<<n-1) }
 
-// compose multiple coordinate modifications
-type ops []op
-
-func (c ops) do(reverse bool, n int, v []int) {
+// do2 executes the given operations, optionally in reverse.
+//
+// Generic specialization reduces allocation (because it can eliminate interface
+// value boxing) and improves performance
+func do2[A, B op](reverse bool, n int, v []int, a A, b B) {
 	if reverse {
-		for i := len(c) - 1; i >= 0; i-- {
-			c[i].do(n, v)
-		}
+		b.do(n, v)
+		a.do(n, v)
 	} else {
-		for _, c := range c {
-			c.do(n, v)
-		}
+		a.do(n, v)
+		b.do(n, v)
 	}
 }
